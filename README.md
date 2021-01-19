@@ -1,0 +1,1 @@
+# travis-shared-configuration
