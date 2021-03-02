@@ -54,3 +54,7 @@ import: yoomoney-gradle-plugins/travis-shared-configuration:<name>@master
       Без переменных релиз будет выпущен, но плагин не будет загружен:  
       ```GRADLE_PUBLISH_KEY```  
       ```GRADLE_PUBLISH_SECRET```
+     
+   * Для подписи артефакта. Подпись необходима для публикации артефакта в https://oss.sonatype.org (MavenCentral).
+      Без переменной релиз проекта, использующий публикацию в MavenCentral, выпущен не будет:  
+      ```PUBLISH_GPG_KEY```  - в переменной необходимо задать вывод команды openssl base64 -A -in <private_gpg_key>
