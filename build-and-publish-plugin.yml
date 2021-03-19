@@ -18,7 +18,10 @@ before_script:
   - git config --global user.email "SvcReleaserBackend@yoomoney.ru"
   - git config --global user.name "yoomoney-robot"
   - echo $GIT_KEY | openssl base64 -A -d >> ~/.ssh/git_key
-  - export ORG_GRADLE_PROJECT_signingKey=$(echo $PUBLISH_GPG_KEY | openssl base64 -A -d)
+  - |
+    if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then
+        export ORG_GRADLE_PROJECT_signingKey=$(echo $PUBLISH_GPG_KEY | openssl base64 -A -d)
+    fi
   - chmod 400 ~/.ssh/git_key
   - eval `ssh-agent -s`
   - echo "echo $GIT_KEY_PASSPHRASE" >> $HOME/passphrase
