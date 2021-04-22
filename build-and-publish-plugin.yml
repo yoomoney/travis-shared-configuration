@@ -39,7 +39,7 @@ jobs:
   include:
     - stage: build
       script:
-        - ./gradlew -b build.gradle clean build test publish --info --stacktrace --refresh-dependencies
+        - ./gradlew -b build.gradle clean build test checkCoverage publish --info --stacktrace --refresh-dependencies
     - stage: release
       if: branch = master
       script:
