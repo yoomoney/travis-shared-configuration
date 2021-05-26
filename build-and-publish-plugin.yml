@@ -7,7 +7,7 @@ env:
     secure: "Lfmq8OKMbRTLFEI1c4VGTSvbwpvMzrAH79PdwX3/iELAGBvSoQLW3Rqz+//TcJWKOgOVmHSpUVDcR8GOOoc5hQ5Vq3NTNKCihGRTEtGs641vsg8dx6jHR/TjcN3Tsopwb4BwXOOanLeNMiuRUSh3BbU9zGT4UBL3/03BKX0dXctRy+hK+zgEm/807KmZ/PNQQOVQsZc/+3rZU009lhgCRe7jsRtftRrO5juQDoYnt3uXorCuWw4r7rtvTzGgXJMhbp4jgLzQKHigqsFoESN+9i4yqrpHixKgpgFCBHo/bJZIA3zFdy85+ENKuMrUeJKultJEDr3VdxyyqylE5I11SFZ4EO72FrGy4hlr71Oj9qV4RYWZQwBR9BLcpPbkbFv91BaMYE2R3huKJH49staKG2lLx1munKU/OtJJsnXvBrNtsPcRlo2oUQ0F5l7Uno+v8CMy7M+p2KAzKCNfuAA7CYIaESovWxPD/gybf9GziilFfTfM7yCqMWtZoXxtySYn2V/peRx1JeWtosMRDM0hFExGTpGqpWj7TpdgxOCkudqMTgtQPUqZilWsGfuSh7rT2Q7ydSXYYvAXP5dCUV3xtnfdrFDes7vt+1SI/Brh5p7zyFgc3qbi8fFJYqnYQJbJgsbIhATkgCdZizigPUIyhLlImEVgMCgHciz8IaJWW0s="
 
 git:
-  clone: false
+  clone: true
 
 #Below skips the installation step completely (https://docs.travis-ci.com/user/customizing-the-build/#Skipping-the-Installation-Step)
 #We need it because otherwise Travis CI injects an awkward './gradlew assemble' step into the CI workflow
@@ -18,29 +18,6 @@ install:
 before_script:
   - git config --global user.email "SvcReleaserBackend@yoomoney.ru"
   - git config --global user.name "yoomoney-robot"
-  - |
-    if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then
-        echo $GIT_KEY | openssl base64 -A -d >> ~/.ssh/git_key
-        export ORG_GRADLE_PROJECT_signingKey=$(echo $PUBLISH_GPG_KEY | openssl base64 -A -d)
-        chmod 400 ~/.ssh/git_key
-        eval `ssh-agent -s`
-        echo "echo $GIT_KEY_PASSPHRASE" >> $HOME/passphrase
-        chmod 700 $HOME/passphrase
-        export DISPLAY=":0.0"
-        cat ~/.ssh/git_key | SSH_ASKPASS="$HOME/passphrase" ssh-add -
-        git clone --depth=50 --branch=$TRAVIS_BRANCH git@github.com:$TRAVIS_REPO_SLUG.git $TRAVIS_REPO_SLUG
-        cd $TRAVIS_REPO_SLUG
-        git checkout -f $TRAVIS_BRANCH
-        export GIT_PRIVATE_SSH_KEY_PATH=~/.ssh/git_key
-    fi
-  - |
-    if [ $TRAVIS_BRANCH != "master" ]; then
-        eval `ssh-agent -s`
-        export DISPLAY=":0.0"
-        git clone --depth=50 --branch=$TRAVIS_BRANCH git@github.com:$TRAVIS_REPO_SLUG.git $TRAVIS_REPO_SLUG
-        cd $TRAVIS_REPO_SLUG
-        git checkout -f $TRAVIS_BRANCH
-    fi
 
 if: commit_message !~ /(\[Gradle Release Plugin\])/
 
