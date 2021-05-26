@@ -13,7 +13,8 @@ install:
 
 before_script:
   - |
-    if [ $TRAVIS_BRANCH != "master" ]; then
+    # для master ветки необходим кастомный git clone для возможности выпуска релиза
+    if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then
         git config --global user.email "SvcReleaserBackend@yoomoney.ru"
         git config --global user.name "yoomoney-robot"
         echo $GIT_KEY | openssl base64 -A -d >> ~/.ssh/git_key
@@ -30,7 +31,8 @@ before_script:
         export GIT_PRIVATE_SSH_KEY_PATH=~/.ssh/git_key
     fi
   - |
-    if [ $TRAVIS_BRANCH == "master" ]; then
+    # для не-master веток (fork в том числе) используем git clone без знания секретных переменных
+    if [ $TRAVIS_BRANCH != "master" ]; then
         git clone --depth=50 --branch=$TRAVIS_BRANCH https://github.com/$TRAVIS_REPO_SLUG.git $TRAVIS_REPO_SLUG
         cd $TRAVIS_REPO_SLUG
         git checkout -f $TRAVIS_BRANCH
