@@ -15,31 +15,44 @@ install:
   - true
 
 before_script:
-  - git config --global user.email "SvcReleaserBackend@yoomoney.ru"
-  - git config --global user.name "yoomoney-robot"
-  - echo $GIT_KEY | openssl base64 -A -d >> ~/.ssh/git_key
   - |
+    # для master ветки необходим кастомный git clone для возможности выпуска релиза
     if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then
+        git config --global user.email "SvcReleaserBackend@yoomoney.ru"
+        git config --global user.name "yoomoney-robot"
+        echo $GIT_KEY | openssl base64 -A -d >> ~/.ssh/git_key
         export ORG_GRADLE_PROJECT_signingKey=$(echo $PUBLISH_GPG_KEY | openssl base64 -A -d)
+        chmod 400 ~/.ssh/git_key
+        eval `ssh-agent -s`
+        echo "echo $GIT_KEY_PASSPHRASE" >> $HOME/passphrase
+        chmod 700 $HOME/passphrase
+        export DISPLAY=":0.0"
+        cat ~/.ssh/git_key | SSH_ASKPASS="$HOME/passphrase" ssh-add -
+        git clone --depth=50 --branch=$TRAVIS_BRANCH git@github.com:$TRAVIS_REPO_SLUG.git $TRAVIS_REPO_SLUG
+        cd $TRAVIS_REPO_SLUG
+        git checkout -f $TRAVIS_BRANCH
+        export GIT_PRIVATE_SSH_KEY_PATH=~/.ssh/git_key
     fi
-  - chmod 400 ~/.ssh/git_key
-  - eval `ssh-agent -s`
-  - echo "echo $GIT_KEY_PASSPHRASE" >> $HOME/passphrase
-  - chmod 700 $HOME/passphrase
-  - export DISPLAY=":0.0"
-  - cat ~/.ssh/git_key | SSH_ASKPASS="$HOME/passphrase" ssh-add -
-  - git clone --depth=50 --branch=$TRAVIS_BRANCH git@github.com:$TRAVIS_REPO_SLUG.git $TRAVIS_REPO_SLUG
-  - cd $TRAVIS_REPO_SLUG
-  - git checkout -f $TRAVIS_BRANCH
-  - export GIT_PRIVATE_SSH_KEY_PATH=~/.ssh/git_key
+  - |
+    # для не-master веток (fork в том числе) используем git clone без знания секретных переменных
+    if [ $TRAVIS_BRANCH != "master" ]; then
+        git clone --depth=50 --branch=$TRAVIS_BRANCH https://github.com/$TRAVIS_REPO_SLUG.git $TRAVIS_REPO_SLUG
+        cd $TRAVIS_REPO_SLUG
+        git checkout -f $TRAVIS_BRANCH
+    fi
 
 if: commit_message !~ /(\[Gradle Release Plugin\])/
 
 jobs:
   include:
-    - stage: build
+    - stage: buildAndPublish
+      if: fork = false
       script:
         - ./gradlew -b build.gradle clean build test checkCoverage publish --info --stacktrace --refresh-dependencies
+    - stage: build
+      if: fork = true
+      script:
+        - ./gradlew -b build.gradle clean build test checkCoverage --info --stacktrace --refresh-dependencies
     - stage: release
       if: branch = master
       script:
