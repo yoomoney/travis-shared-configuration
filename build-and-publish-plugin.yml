@@ -45,9 +45,13 @@ if: commit_message !~ /(\[Gradle Release Plugin\])/
 
 jobs:
   include:
-    - stage: build
+    - stage: buildAndPublish
       script:
         - ./gradlew -b build.gradle clean build test checkCoverage publish --info --stacktrace --refresh-dependencies
+    - stage: build
+      if: fork = true
+      script:
+        - ./gradlew -b build.gradle clean build test checkCoverage --info --stacktrace --refresh-dependencies
     - stage: release
       if: branch = master
       script:
