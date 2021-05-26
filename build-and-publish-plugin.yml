@@ -22,17 +22,27 @@ before_script:
   - |
     if [ $TRAVIS_BRANCH == "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then
         export ORG_GRADLE_PROJECT_signingKey=$(echo $PUBLISH_GPG_KEY | openssl base64 -A -d)
+        chmod 400 ~/.ssh/git_key
+        eval `ssh-agent -s`
+        echo "echo $GIT_KEY_PASSPHRASE" >> $HOME/passphrase
+        chmod 700 $HOME/passphrase
+        export DISPLAY=":0.0"
+        cat ~/.ssh/git_key | SSH_ASKPASS="$HOME/passphrase" ssh-add -
+        git clone --depth=50 --branch=$TRAVIS_BRANCH git@github.com:$TRAVIS_REPO_SLUG.git $TRAVIS_REPO_SLUG
+        cd $TRAVIS_REPO_SLUG
+        git checkout -f $TRAVIS_BRANCH
+        export GIT_PRIVATE_SSH_KEY_PATH=~/.ssh/git_key
     fi
-  - chmod 400 ~/.ssh/git_key
-  - eval `ssh-agent -s`
-  - echo "echo $GIT_KEY_PASSPHRASE" >> $HOME/passphrase
-  - chmod 700 $HOME/passphrase
-  - export DISPLAY=":0.0"
-  - cat ~/.ssh/git_key | SSH_ASKPASS="$HOME/passphrase" ssh-add -
-  - git clone --depth=50 --branch=$TRAVIS_BRANCH git@github.com:$TRAVIS_REPO_SLUG.git $TRAVIS_REPO_SLUG
-  - cd $TRAVIS_REPO_SLUG
-  - git checkout -f $TRAVIS_BRANCH
-  - export GIT_PRIVATE_SSH_KEY_PATH=~/.ssh/git_key
+  - |
+    if [ $TRAVIS_BRANCH != "master" ]; then
+        chmod 400 ~/.ssh/id_rsa
+        eval `ssh-agent -s`
+        export DISPLAY=":0.0"
+        ssh-add ~/.ssh/id_rsa
+        git clone --depth=50 --branch=$TRAVIS_BRANCH git@github.com:$TRAVIS_REPO_SLUG.git $TRAVIS_REPO_SLUG
+        cd $TRAVIS_REPO_SLUG
+        git checkout -f $TRAVIS_BRANCH
+    fi
 
 if: commit_message !~ /(\[Gradle Release Plugin\])/
 
