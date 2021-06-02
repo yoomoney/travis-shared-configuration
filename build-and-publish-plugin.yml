@@ -35,10 +35,17 @@ before_script:
     fi
   - |
     # для не-master веток (fork в том числе) используем git clone без знания секретных переменных
-    if [ $TRAVIS_BRANCH != "master" ]; then
+    if [ $TRAVIS_BRANCH != "master" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then
         git clone --depth=50 --branch=$TRAVIS_BRANCH https://github.com/$TRAVIS_REPO_SLUG.git $TRAVIS_REPO_SLUG
         cd $TRAVIS_REPO_SLUG
         git checkout -f $TRAVIS_BRANCH
+    fi
+  - |
+    # для сборок pull-request. Для clone используется TRAVIS_PULL_REQUEST_BRANCH (source-ветка pull-request)
+    if [ $TRAVIS_PULL_REQUEST != "false" ]; then
+        git clone --depth=50 --branch=$TRAVIS_PULL_REQUEST_BRANCH https://github.com/$TRAVIS_PULL_REQUEST_SLUG.git $TRAVIS_PULL_REQUEST_SLUG
+        cd $TRAVIS_PULL_REQUEST_SLUG
+        git checkout -f $TRAVIS_PULL_REQUEST_BRANCH
     fi
 
 if: commit_message !~ /(\[Gradle Release Plugin\])/
@@ -54,7 +61,9 @@ jobs:
       script:
         - ./gradlew -b build.gradle clean build test checkCoverage --info --stacktrace --refresh-dependencies
     - stage: release
-      if: branch = master
+      if: |
+        branch = master AND \
+        type = push
       script:
         - |
           ./gradlew -b build.gradle preRelease --info  --stacktrace --refresh-dependencies -D"gradle.publish.key"=$GRADLE_PUBLISH_KEY -D"gradle.publish.secret"=$GRADLE_PUBLISH_SECRET
