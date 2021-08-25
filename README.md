@@ -3,7 +3,7 @@
 Репозиторий для хранения общих конфигураций travis.  
   
 Для подключения конфигураций пропишите в файл .travis.yml:  
-import: yoomoney-gradle-plugins/travis-shared-configuration:<name>@master  
+import: yoomoney/travis-shared-configuration:<name>@master  
   
 Для тестирования возможно указать feature ветку вместо @master.  
 Подробнее о shared конфигурациях: https://docs.travis-ci.com/user/build-config-imports/#importing-configs-from-private-repositories  
@@ -13,7 +13,7 @@ import: yoomoney-gradle-plugins/travis-shared-configuration:<name>@master
 ### build-and-publish-plugin.yml
 Конфигурация создана для сборки, релиза и публикации gradle-plugin.  
 Конфигурация объявляет stage для сборки проекта для всех веток, а также stage для выпуска релиза для ветки master.  
-Используемые при релизе таски объявляются при подключении https://github.com/yoomoney-gradle-plugins/artifact-release-plugin.  
+Используемые при релизе таски объявляются при подключении https://github.com/yoomoney/artifact-release-plugin.  
 
 Для fork проектов сборка осуществляется без публикации артефакта в репозиторий. Переменные окружения для сборки fork не нужны. 
 
