@@ -60,6 +60,10 @@ jobs:
       if: fork = true
       script:
         - ./gradlew -b build.gradle clean build test checkCoverage --info --stacktrace --refresh-dependencies
+    - stage: checkSnapshotsDependencies
+      if: branch != master
+      script:
+        - ./gradlew checkSnapshotsDependencies
     - stage: release
       if: |
         branch = master AND \
