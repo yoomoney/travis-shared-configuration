@@ -61,6 +61,7 @@ jobs:
       script:
         - ./gradlew -b build.gradle clean build test checkCoverage --info --stacktrace --refresh-dependencies
     - stage: checkSnapshotsDependencies
+      if: branch != master
       script:
         - ./gradlew checkSnapshotsDependencies
     - stage: release
