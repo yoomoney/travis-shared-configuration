@@ -35,11 +35,6 @@ import: yoomoney/travis-shared-configuration:<name>@master
    невозможно задавать переменные для конкретных веток, но в целях безопасности рекомендуется задавать их только для master ветки.  
    Переменные прописываются в блоке "Environment Variables", при добавлении переменной не забыть указать ветку master в блоке BRANCH.  
    Список необходимых переменных:  
-   * Для загрузки артефакта в bintray.  
-      Обязательные переменные, релиз будет выпущен, но артефакт в bintray не загрузится:  
-      ```BINTRAY_API_KEY```  
-      ```BINTRAY_PASSPHRASE```  
-      ```BINTRAY_USER```
 
    * Для работы с git.  
       Применяется при выпуске релиза, обязательные переменные, без них релиз выпущен не будет:  
@@ -55,7 +50,13 @@ import: yoomoney/travis-shared-configuration:<name>@master
       Без переменных релиз будет выпущен, но плагин не будет загружен:  
       ```GRADLE_PUBLISH_KEY```  
       ```GRADLE_PUBLISH_SECRET```
-     
+   
+   * Логин и пароль для публикации в mavenCentral. Подробности о публикации, в том числе о том, как получить логин и пароль смотрите здесь: https://central.sonatype.org/publish/publish-guide
+      Без переменных релиз проекта выпущен не будет:  
+      ```NEXUS_USER``` - логин от аккаунта sonatype
+      ```NEXUS_PASSWORD``` - пароль от аккаунта sonatype
+
    * Для подписи артефакта. Подпись необходима для публикации артефакта в https://oss.sonatype.org (MavenCentral).
-      Без переменной релиз проекта, использующий публикацию в MavenCentral, выпущен не будет:  
+      Без переменных релиз проекта выпущен не будет:  
       ```PUBLISH_GPG_KEY```  - в переменной необходимо задать вывод команды openssl base64 -A -in <private_gpg_key>
+      ```ORG_GRADLE_PROJECT_signingPassword``` - passphrase для GPG ключа.
